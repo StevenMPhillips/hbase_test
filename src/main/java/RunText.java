@@ -16,6 +16,9 @@
  * limitations under the License.
  */
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -32,11 +35,32 @@ import java.util.List;
 
 public class RunText {
 
-  static Path path = new Path("/lineitem.tbl");
-  static byte delim = "|".getBytes()[0];
-  static String toFind = "1";
+  static Path path;
+  static byte delim;
+  static String toFind;
+  static int index;
+  static Options o;
 
   public static void main(String[] args) throws Exception {
+    o = new Options();
+    JCommander jc = null;
+    try {
+      jc = new JCommander(o, args);
+      jc.setProgramName("./runText");
+    } catch (ParameterException e) {
+      System.out.println(e.getMessage());
+      String[] valid = {"-p", "path", "-d", "delimiter", "v", "value", "-i", "index"};
+      new JCommander(o, valid).usage();
+      System.exit(-1);
+    }
+    if (o.help) {
+      jc.usage();
+      System.exit(0);
+    }
+    path = new Path(o.path);
+    delim = o.delimiter.getBytes()[0];
+    toFind = o.value;
+    index = o.index;
     Configuration conf = new Configuration();
     FileSystem fs = FileSystem.get(conf);
     TextInputFormat format = new TextInputFormat();
@@ -50,7 +74,7 @@ public class RunText {
     long t1 = System.nanoTime();
     while(reader.next(key, value)) {
       List<String> values = parse(value);
-      if (values.get(0).equals(toFind)) {
+      if (values.get(index).equals(toFind)) {
         System.out.println(value);
       }
       count++;
@@ -89,5 +113,22 @@ public class RunText {
       p++;
     }
     return -1;
+  }
+
+  static class Options {
+    @Parameter(names = {"-p"}, description = "path", required=true)
+    public String path = null;
+
+    @Parameter(names = {"-d"}, description = "delimiter", required=true)
+    public String delimiter = null;
+
+    @Parameter(names = {"-v"}, description = "value", required=true)
+    public String value = null;
+
+    @Parameter(names = {"-i"}, description = "index", required=true)
+    public int index = 0;
+
+    @Parameter(names = {"-h", "--help"}, description = "show usage", help=true)
+    public boolean help = false;
   }
 }

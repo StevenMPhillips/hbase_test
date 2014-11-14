@@ -68,7 +68,7 @@ public class RunHBase implements Runnable {
     JCommander jc = null;
     try {
       jc = new JCommander(o, args);
-      jc.setProgramName("./submit_plan");
+      jc.setProgramName("./runHBase");
     } catch (ParameterException e) {
       System.out.println(e.getMessage());
       String[] valid = {"-t", "table", "-f", "family", "q", "qualifier", "-v", "value"};
