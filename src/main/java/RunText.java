@@ -81,6 +81,7 @@ public class RunText {
     }
     long t2 = System.nanoTime();
     System.out.printf("Read %d records in %f seconds. %f records per second", count, (t2 - t1) / 1E9, count * 1E9 / (t2 - t1));
+    fs.close();
   }
 
   private static List<String> parse(Text value) {
